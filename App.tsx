@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StatusBar, StyleSheet, Text, View} from 'react-native';
+import {SafeAreaView, StatusBar, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
 import BackgroundFetch from 'react-native-background-fetch';
 import PushNotification from 'react-native-push-notification';
 import cheerio from 'cheerio';
@@ -7,7 +7,7 @@ import moment from 'moment-timezone';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // --- 설정 변수 ---
-const BLOG_URL = 'https://blog.naver.com/newhair2444';
+const BLOG_URL = 'https://blog.naver.com/poikl11234';
 const NOTIFICATION_CHANNEL_ID = 'blog-notification-channel';
 
 // --- 푸시 알림 초기 설정 ---
@@ -64,7 +64,7 @@ const checkBlogForNewPost = async () => {
   const hour = now.hour();
 
   // 주말이거나, 28일 이후이거나, 19시 이전이면 작업 종료
-  if (dayOfWeek === 0 || dayOfWeek === 6) {
+  /* if (dayOfWeek === 0 || dayOfWeek === 6) {
     console.log('[BlogNotifier] 주말이므로 작업을 건너뜁니다.');
     return;
   }
@@ -75,7 +75,7 @@ const checkBlogForNewPost = async () => {
   if (hour < 19) {
     console.log('[BlogNotifier] 19시 이전이므로 작업을 건너뜁니다.');
     return;
-  }
+  } */
 
   // 2. 오늘 날짜로 이미 알림을 보냈는지 확인
   const todayString = now.format('YYYY-MM-DD');
@@ -88,7 +88,12 @@ const checkBlogForNewPost = async () => {
 
   try {
     // 3. 블로그 HTML 가져오기
-    const response = await fetch(BLOG_URL);
+    const response = await fetch(BLOG_URL, {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+          },
+        });
     const html = await response.text();
     const $ = cheerio.load(html);
 
@@ -197,6 +202,14 @@ const App = () => {
           지정된 네이버 블로그를 확인합니다.
         </Text>
         <Text style={styles.status}>현재 상태: {status}</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            console.log('테스트 버튼 클릭! 블로그 확인을 시작합니다.');
+            checkBlogForNewPost();
+          }}>
+          <Text style={styles.buttonText}>수동으로 새 글 확인 (테스트)</Text>
+        </TouchableOpacity>
         <Text style={styles.info}>
           - 평일, 매월 1일~28일 사이에만 작동합니다.
           {'\n'}- 19시 이후 새 글이 올라오면 알림을 보냅니다.
@@ -248,6 +261,19 @@ const styles = StyleSheet.create({
     borderTopColor: '#cfd8dc',
     paddingTop: 20,
   },
+  button: {
+      backgroundColor: '#1976d2',
+      paddingVertical: 12,
+      paddingHorizontal: 25,
+      borderRadius: 8,
+      marginVertical: 20,
+      elevation: 3, // 안드로이드 그림자 효과
+    },
+    buttonText: {
+      color: '#ffffff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
 });
 
 export default App;
